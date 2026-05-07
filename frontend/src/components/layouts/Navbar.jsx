@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
 import SideMenu from './SideMenu';
+import LOGO from '../../assets/images/Spendly_Logo.png';
 
 const Navbar = ({ activeMenu }) => {
     const [openSideMenu, setOpenSideMenu] = useState(false);
@@ -17,10 +18,10 @@ const Navbar = ({ activeMenu }) => {
                 <HiOutlineX className="text-2xl" />
             ) : (
                 <HiOutlineMenu className="text-2xl" />
-            )};
+            )}
         </button>
 
-        <h2 className="text-lg font-medium text-black">Spendly</h2>
+        <img src={LOGO} alt="Spendly Logo" className="h-8 w-auto" />
 
         {openSideMenu && (
             <div className="fixed top-[61px] -ml-4 bg-white">

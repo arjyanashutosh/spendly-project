@@ -26,16 +26,18 @@ const Home = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [downloadingReport, setDownloadingReport] = useState(false);
+  const [filterRange, setFilterRange] = useState(""); // empty string means "All Time"
 
   const handleDownloadReport = async () => {
     try {
       setDownloadingReport(true);
       toast.loading("Preparing your report...", { id: "report-toast" });
 
+      const queryStr = filterRange ? `?range=${filterRange}` : "";
       // Fetch all income and expenses
       const [incomeRes, expenseRes] = await Promise.all([
-        axiosInstance.get(API_PATHS.INCOME.GET_ALL_INCOME),
-        axiosInstance.get(API_PATHS.EXPENSE.GET_ALL_EXPENSE)
+        axiosInstance.get(`${API_PATHS.INCOME.GET_ALL_INCOME}${queryStr}`),
+        axiosInstance.get(`${API_PATHS.EXPENSE.GET_ALL_EXPENSE}${queryStr}`)
       ]);
 
       const allIncome = (incomeRes.data || []).map(t => ({ ...t, type: 'income' }));
@@ -68,7 +70,8 @@ const Home = () => {
     setLoading(true);
 
     try {
-      const response = await axiosInstance.get(`${API_PATHS.DASHBOARD.GET_DATA}`);
+      const queryStr = filterRange ? `?range=${filterRange}` : "";
+      const response = await axiosInstance.get(`${API_PATHS.DASHBOARD.GET_DATA}${queryStr}`);
 
       if (response.data) {
         setDashboardData(response.data);
@@ -83,7 +86,7 @@ const Home = () => {
   useEffect(() => {
     fetchDashboardData();
     return () => { };
-  }, []);
+  }, [filterRange]);
 
   return (
     <DashboardLayout activeMenu="Dashboard">
@@ -106,19 +109,33 @@ const Home = () => {
           <InfoCard
             icon={<LuHandCoins />}
             label="Total Expense"
-            value={addThousandsSeparator(dashboardData?.totalExpenses || 0)}
+            value={addThousandsSeparator(dashboardData?.totalExpense || 0)}
             color="bg-red-500"
           />
         </div>
 
         <div className="mt-6 flex flex-col items-start md:items-end w-full">
-          <button 
-            onClick={handleDownloadReport} 
-            disabled={downloadingReport}
-            className="w-full md:w-auto bg-primary text-white font-medium py-2.5 px-5 rounded-md hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
-          >
-            ⬇ Download Financial Report
-          </button>
+          <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+            <select
+              className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-md outline-none focus:border-primary"
+              value={filterRange}
+              onChange={(e) => setFilterRange(e.target.value)}
+            >
+              <option value="">All Time</option>
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="60">Last 60 Days</option>
+              <option value="90">Last 90 Days</option>
+            </select>
+            
+            <button 
+              onClick={handleDownloadReport} 
+              disabled={downloadingReport}
+              className="w-full md:w-auto bg-primary text-white font-medium py-2.5 px-5 rounded-md hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+            >
+              ⬇ Download Financial Report
+            </button>
+          </div>
           <p className="text-xs text-gray-500 mt-2 w-full md:text-right">
             Includes all transactions, category analysis & monthly summary
           </p>

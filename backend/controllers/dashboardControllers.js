@@ -7,43 +7,46 @@ exports.getDashboardData = async (req, res) => {
     try {
         const userId = req.user.id;
         const userObjectId = new Types.ObjectId(String(userId));
+        const { range } = req.query;
+        
+        let matchQuery = { userId: userObjectId };
+        let findQuery = { userId };
+
+        if (range) {
+            const dateFilter = { $gte: new Date(Date.now() - parseInt(range) * 24 * 60 * 60 * 1000) };
+            matchQuery.date = dateFilter;
+            findQuery.date = dateFilter;
+        }
 
         // Fetch total income 
         const totalIncome = await Income.aggregate([
-            { $match: { userId: userObjectId } },
+            { $match: matchQuery },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
-
-        console.log("totalIncome", { totalIncome, userId: isValidObjectId(userId) });
 
         const totalExpense = await Expense.aggregate([
-
             // Fetch total expense 
-            { $match: { userId: userObjectId } },
+            { $match: matchQuery },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
 
-        console.log("totalExpense", { totalExpense, userId: isValidObjectId(userId) });
+        // Get income transactions
+        const last60DaysIncomeTransaction = await Income.find(
+            range ? findQuery : { userId, date: { $gte: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000) } }
+        ).sort({ date: -1 });
 
-        // Get income transactions in the last 60 days 
-        const last60DaysIncomeTransaction = await Income.find({
-            userId,
-            date: { $gte: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000) }
-        }).sort({ date: -1 });
-
-        // Get total income for last 60 days 
+        // Get total income
         const incomeLast60Days = last60DaysIncomeTransaction.reduce(
             (sum, transaction) => sum + transaction.amount,
             0
         );
 
-        // Get expense transaction in the last 30 days 
-        const last30DaysExpenseTransaction = await Expense.find({
-            userId,
-            date: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
-        }).sort({ date: -1 });
+        // Get expense transaction
+        const last30DaysExpenseTransaction = await Expense.find(
+            range ? findQuery : { userId, date: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }
+        ).sort({ date: -1 });
 
-        // Get total expense for last 30 days 
+        // Get total expense
         const expenseLast30Days = last30DaysExpenseTransaction.reduce(
             (sum, transaction) => sum + transaction.amount,
             0
@@ -51,13 +54,13 @@ exports.getDashboardData = async (req, res) => {
 
         // Fetch last 5 transactions (income + expense) 
         const lastTransactions = [
-            ...(await Income.find({ userId }).sort({ date: -1 }).limit(5)).map(
+            ...(await Income.find(findQuery).sort({ date: -1 }).limit(5)).map(
                 (txn) => ({
                     ...txn.toObject(),
                     type: "income",
                 })
             ),
-            ...(await Expense.find({ userId }).sort({ date: -1 }).limit(5)).map(
+            ...(await Expense.find(findQuery).sort({ date: -1 }).limit(5)).map(
                 (txn) => ({
                     ...txn.toObject(),
                     type: "expense",

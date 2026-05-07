@@ -49,6 +49,8 @@ const Login = () => {
     } catch (error) {
       if (error.response && error.response.data.message) {
         setError(error.response.data.message);
+      } else if (error.code === "ERR_NETWORK") {
+        setError("Unable to connect to the server. Please ensure the backend is running.");
       } else {
         setError("Something went wrong. Please try again.");
       }

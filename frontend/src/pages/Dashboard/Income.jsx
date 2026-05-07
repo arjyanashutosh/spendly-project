@@ -20,6 +20,7 @@ const Income = () => {
     data: null
   });
   const [openAddIncomeModal, setOpenAddIncomeModal] = useState(false);
+  const [filterRange, setFilterRange] = useState(""); // empty string means "All Time"
 
   // Get All Income Details 
   const fetchIncomeDetails = async () => {
@@ -28,7 +29,8 @@ const Income = () => {
     setLoading(true);
 
     try {
-      const response = await axiosInstance.get(`${API_PATHS.INCOME.GET_ALL_INCOME}`);
+      const queryStr = filterRange ? `?range=${filterRange}` : "";
+      const response = await axiosInstance.get(`${API_PATHS.INCOME.GET_ALL_INCOME}${queryStr}`);
 
       if (response.data) {
         setIncomeData(response.data);
@@ -92,7 +94,8 @@ const Income = () => {
   // Handle Download Income Details 
   const handleDownloadIncomeDetails = async () => {
     try {
-      const response = await axiosInstance.get(API_PATHS.INCOME.DOWNLOAD_INCOME, {
+      const queryStr = filterRange ? `?range=${filterRange}` : "";
+      const response = await axiosInstance.get(`${API_PATHS.INCOME.DOWNLOAD_INCOME}${queryStr}`, {
         responseType: "blob"
       });
 
@@ -115,7 +118,7 @@ const Income = () => {
     fetchIncomeDetails();
 
     return () => { };
-  }, []);
+  }, [filterRange]);
 
   return (
     <DashboardLayout activeMenu="Income">
@@ -134,6 +137,8 @@ const Income = () => {
               setOpenDeleteAlert({ show: true, data: id });
             }}
             onDownload={handleDownloadIncomeDetails}
+            filterRange={filterRange}
+            onFilterChange={setFilterRange}
           />
         </div>
 

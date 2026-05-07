@@ -26,7 +26,7 @@ const CustomPieChart = ({ data, label, totalAmount, colors, showTextAnchor }) =>
             >
                 {data.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-                ))};
+                ))}
             </Pie>
             <Tooltip content={CustomTooltip} />
             <Legend content={CustomLegend} />
@@ -55,7 +55,7 @@ const CustomPieChart = ({ data, label, totalAmount, colors, showTextAnchor }) =>
                         {totalAmount}
                     </text>
                 </>
-            )};
+            )}
         </PieChart>
     </ResponsiveContainer>
   );

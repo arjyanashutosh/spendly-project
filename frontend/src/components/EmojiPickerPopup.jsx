@@ -16,7 +16,7 @@ const EmojiPickerPopup = ({ icon, onSelect }) => {
                         <img src={icon} alt='Icon' className="w-12 h-12" />
                     ) : (
                         <LuImage />
-                    )};
+                    )}
                 </div>
 
                 <p className="">{icon ? "Change Icon" : "Pick Icon"}</p>
@@ -36,7 +36,7 @@ const EmojiPickerPopup = ({ icon, onSelect }) => {
                         onEmojiClick={(emoji) => onSelect(emoji?.imageUrl || "")}
                     />
                 </div>
-            )};
+            )}
         </div>
     );
 };

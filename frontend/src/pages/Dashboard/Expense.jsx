@@ -22,6 +22,7 @@ const Expense = () => {
   });
   const [openAddExpenseModal, setOpenAddExpenseModal] = useState(false);
   const [openScanReceiptModal, setOpenScanReceiptModal] = useState(false);
+  const [filterRange, setFilterRange] = useState(""); // empty string means "All Time"
 
   // Get All Expense Details 
   const fetchExpenseDetails = async () => {
@@ -30,7 +31,8 @@ const Expense = () => {
     setLoading(true);
 
     try {
-      const response = await axiosInstance.get(`${API_PATHS.EXPENSE.GET_ALL_EXPENSE}`);
+      const queryStr = filterRange ? `?range=${filterRange}` : "";
+      const response = await axiosInstance.get(`${API_PATHS.EXPENSE.GET_ALL_EXPENSE}${queryStr}`);
 
       if (response.data) {
         setExpenseData(response.data);
@@ -92,10 +94,10 @@ const Expense = () => {
     }
   };
 
-  // Handle Download Expense Details 
   const handleDownloadExpenseDetails = async () => {
     try {
-      const response = await axiosInstance.get(API_PATHS.EXPENSE.DOWNLOAD_EXPENSE, {
+      const queryStr = filterRange ? `?range=${filterRange}` : "";
+      const response = await axiosInstance.get(`${API_PATHS.EXPENSE.DOWNLOAD_EXPENSE}${queryStr}`, {
         responseType: "blob"
       });
 
@@ -118,7 +120,7 @@ const Expense = () => {
     fetchExpenseDetails();
 
     return () => { };
-  }, []);
+  }, [filterRange]);
 
   return (
     <DashboardLayout activeMenu="Expense">
@@ -138,6 +140,8 @@ const Expense = () => {
               setOpenDeleteAlert({ show: true, data: id })
             }}
             onDownload={handleDownloadExpenseDetails}
+            filterRange={filterRange}
+            onFilterChange={setFilterRange}
           />
         </div>
 

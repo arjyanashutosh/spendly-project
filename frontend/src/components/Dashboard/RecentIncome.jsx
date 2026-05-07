@@ -25,7 +25,7 @@ const RecentIncome = ({ transactions, onSeeMore }) => {
                         type="income"
                         hideDeleteBtn
                     />
-                ))};
+                ))}
             </div>
         </div>
     );
